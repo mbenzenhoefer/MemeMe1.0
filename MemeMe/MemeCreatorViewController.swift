@@ -184,19 +184,23 @@ extension MemeCreatorViewController {
             
             shareController.completionWithItemsHandler = { (activityType: UIActivity.ActivityType?, completed: Bool, returnedItems: [Any]?, error: Error?) -> Void in
                 if completed {
-                    let meme = Meme(
-                        topText: self.topTextField.text ?? "",
-                        bottomText: self.bottomTextField.text ?? "",
-                        originalImage: backgroundImageResource,
-                        memedImage: memedImage
-                    )
-                    
-                    self.createdMemes.append(meme)
+                    self.saveMeme(backgroundImage: backgroundImageResource, memedImage: memedImage)
                 }
             }
             
             present(shareController, animated: true, completion: nil)
         }
+    }
+    
+    private func saveMeme(backgroundImage: UIImage, memedImage: UIImage) {
+        let meme = Meme(
+            topText: self.topTextField.text ?? "",
+            bottomText: self.bottomTextField.text ?? "",
+            originalImage: backgroundImage,
+            memedImage: memedImage
+        )
+        
+        self.createdMemes.append(meme)
     }
     
     private func generateMemedImage() -> UIImage {
