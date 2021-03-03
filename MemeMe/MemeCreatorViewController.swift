@@ -41,6 +41,10 @@ class MemeCreatorViewController: UIViewController, UINavigationControllerDelegat
         NSAttributedString.Key.strokeWidth: -2.0
     ]
     
+    //MARK: Store
+    // This store should be replaced by something more persistant
+    private var createdMemes = [Meme]()
+    
     //MARK: Lifecycle related
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -145,9 +149,7 @@ class MemeCreatorViewController: UIViewController, UINavigationControllerDelegat
     }
     
     private func unsubscribeFromKeyboardNotifications() {
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
-        
-        NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+        NotificationCenter.default.removeObserver(self)
     }
     
     @objc private func keyboardWillShow(_ notification: Notification) {
@@ -176,14 +178,22 @@ extension MemeCreatorViewController {
     private func buildMemeAndShare() {
         removeFocusFromTextFields()
         if let backgroundImageResource = backgroundImage.image  {
-            let meme = Meme(
-                topText: topTextField.text ?? "",
-                bottomText: bottomTextField.text ?? "",
-                originalImage: backgroundImageResource,
-                memedImage: generateMemedImage()
-            )
             
-            let shareController = UIActivityViewController(activityItems: [meme.memedImage], applicationActivities: nil)
+            let memedImage = generateMemedImage()
+            let shareController = UIActivityViewController(activityItems: [memedImage], applicationActivities: nil)
+            
+            shareController.completionWithItemsHandler = { (activityType: UIActivity.ActivityType?, completed: Bool, returnedItems: [Any]?, error: Error?) -> Void in
+                if completed {
+                    let meme = Meme(
+                        topText: self.topTextField.text ?? "",
+                        bottomText: self.bottomTextField.text ?? "",
+                        originalImage: backgroundImageResource,
+                        memedImage: memedImage
+                    )
+                    
+                    self.createdMemes.append(meme)
+                }
+            }
             
             present(shareController, animated: true, completion: nil)
         }
